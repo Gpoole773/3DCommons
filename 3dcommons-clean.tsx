@@ -1,0 +1,649 @@
+import React, { useState } from 'react';
+import { Search, Database, Settings, X, Upload, Plus, Folder, FolderOpen, Tag } from 'lucide-react';
+
+const ThreeDCommons = () => {
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('personal');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState('');
+  const [settings, setSettings] = useState({
+    darkMode: false,
+    enableRotation: true,
+    rotationSpeed: 'normal'
+  });
+  const [uploadForm, setUploadForm] = useState({
+    name: '',
+    description: '',
+    tags: [],
+    currentTag: '',
+    category: '',
+    folder: '',
+    isPublic: false,
+    file: null
+  });
+
+  const getRotationSpeed = () => {
+    if (!settings.enableRotation) return '0s';
+    switch (settings.rotationSpeed) {
+      case 'slow': return '12s';
+      case 'fast': return '3s';
+      default: return '6s';
+    }
+  };
+
+  const updateSetting = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const folders = [
+    { id: 'childhood', name: 'Childhood Memories', count: 2 },
+    { id: 'vehicles', name: 'My Vehicles', count: 1 },
+    { id: 'current-home', name: 'Current Home', count: 1 },
+    { id: 'family-items', name: 'Family Heirlooms', count: 1 }
+  ];
+
+  const addTag = () => {
+    if (uploadForm.currentTag.trim() && !uploadForm.tags.includes(uploadForm.currentTag.trim())) {
+      setUploadForm(prev => ({
+        ...prev,
+        tags: [...prev.tags, prev.currentTag.trim()],
+        currentTag: ''
+      }));
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setUploadForm(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setUploadForm(prev => ({ ...prev, file }));
+    }
+  };
+
+  const resetUploadForm = () => {
+    setUploadForm({
+      name: '',
+      description: '',
+      tags: [],
+      currentTag: '',
+      category: '',
+      folder: '',
+      isPublic: false,
+      file: null
+    });
+  };
+
+  const handleUploadSubmit = () => {
+    // Here would be the actual upload logic
+    console.log('Uploading:', uploadForm);
+    alert(`Object "${uploadForm.name}" ${uploadForm.isPublic ? 'published publicly' : 'saved privately'}!`);
+    resetUploadForm();
+    setShowUpload(false);
+  };
+
+  const personalObjects = [
+    {
+      id: 'PERS-001',
+      name: 'My Childhood Bedroom',
+      category: 'Spaces',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '3.2×4.1×2.8m',
+      material: 'LIDAR Scan',
+      date: 'Summer 1995',
+      description: 'Complete 3D scan of my bedroom from when I was 8 years old'
+    },
+    {
+      id: 'PERS-002',
+      name: '1994 Honda Civic',
+      category: 'Vehicles',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '4.4×1.7×1.4m',
+      material: 'LIDAR Scan',
+      date: 'March 2001',
+      description: 'My first car, scanned before I sold it'
+    },
+    {
+      id: 'PERS-003',
+      name: 'Austin Apartment Living Room',
+      category: 'Spaces',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '4.8×3.2×2.4m',
+      material: 'LIDAR Scan',
+      date: 'October 2023',
+      description: 'Current living space documentation'
+    },
+    {
+      id: 'PERS-004',
+      name: 'Grandmother\'s Rocking Chair',
+      category: 'Furniture',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '65×85×110cm',
+      material: 'Wood/Fabric',
+      date: 'December 2022',
+      description: 'Family heirloom, precisely documented'
+    }
+  ];
+
+  const publicObjects = [
+    {
+      id: 'OBJ-001',
+      name: 'Roland TR-808 Drum Machine',
+      category: 'Electronics',
+      confidence: 98,
+      locations: 847,
+      verified: true,
+      dimensions: '32.8×21.1×8.4cm',
+      material: 'Plastic/Metal',
+      description: 'Classic analog drum machine'
+    },
+    {
+      id: 'OBJ-002',
+      name: 'Claw Hammer 16oz',
+      category: 'Tools',
+      confidence: 99,
+      locations: 2847,
+      verified: true,
+      dimensions: '32×3.2×13cm',
+      material: 'Steel/Wood',
+      description: 'Standard construction hammer'
+    },
+    {
+      id: 'OBJ-003',
+      name: 'Arduino Uno R3',
+      category: 'Electronics',
+      confidence: 96,
+      locations: 1234,
+      verified: true,
+      dimensions: '68.6×53.4mm',
+      material: 'PCB/Components',
+      description: 'Microcontroller development board'
+    },
+    {
+      id: 'OBJ-004',
+      name: 'Phillips Head Screwdriver',
+      category: 'Tools',
+      confidence: 97,
+      locations: 3421,
+      verified: true,
+      dimensions: '18×2.5cm',
+      material: 'Steel/Plastic',
+      description: 'Standard Phillips head screwdriver'
+    }
+  ];
+
+  const categories = activeTab === 'personal' 
+    ? (selectedFolder ? [] : ['All', 'Spaces', 'Vehicles', 'Furniture', 'Personal Items'])
+    : ['All', 'Electronics', 'Tools', 'Materials', 'Agriculture'];
+
+  const currentObjects = activeTab === 'personal' ? personalObjects : publicObjects;
+
+  const filteredObjects = currentObjects.filter(obj => {
+    const matchesSearch = obj.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === '' || selectedCategory === 'All' || obj.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const ObjectCard = ({ obj }) => (
+    <div className={`border rounded p-3 hover:border-gray-300 transition-colors ${
+      settings.darkMode ? 'bg-neutral-800 border-neutral-700 hover:border-neutral-600' : 'bg-white border-gray-200'
+    }`}>
+      <div className={`w-full aspect-square border rounded mb-3 flex items-center justify-center relative ${
+        settings.darkMode ? 'bg-neutral-700 border-neutral-600' : 'bg-gray-50 border-gray-200'
+      }`}>
+        <div className="w-10 h-10 relative">
+          <div 
+            className="absolute inset-0"
+            style={{
+              transformStyle: 'preserve-3d',
+              animation: settings.enableRotation ? `rotateXY ${getRotationSpeed()} linear infinite` : 'none'
+            }}
+          >
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-500 border-neutral-400' : 'bg-gray-300 border-gray-400'
+              }`}
+              style={{ transform: 'translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-400 border-gray-500'
+              }`}
+              style={{ transform: 'translateZ(-20px) rotateY(180deg)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-400 border-neutral-300' : 'bg-gray-200 border-gray-300'
+              }`}
+              style={{ transform: 'rotateY(90deg) translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-500 border-neutral-400' : 'bg-gray-300 border-gray-400'
+              }`}
+              style={{ transform: 'rotateY(-90deg) translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-300 border-neutral-200' : 'bg-gray-100 border-gray-200'
+              }`}
+              style={{ transform: 'rotateX(90deg) translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-400 border-gray-500'
+              }`}
+              style={{ transform: 'rotateX(-90deg) translateZ(20px)' }}
+            />
+          </div>
+        </div>
+        
+        {obj.verified && (
+          <div className="absolute top-2 right-2 w-2 h-2 bg-emerald-400 rounded-full" />
+        )}
+      </div>
+      
+      <div className="space-y-2">
+        <h3 className={`font-medium text-sm leading-tight ${
+          settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+        }`}>
+          {obj.name}
+        </h3>
+        
+        <div className={`flex justify-between text-xs ${
+          settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+        }`}>
+          <span>{obj.category}</span>
+          <span>{activeTab === 'personal' ? obj.date : `AI: ${obj.confidence}%`}</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className={`p-2 rounded ${
+            settings.darkMode ? 'bg-neutral-700' : 'bg-gray-50'
+          }`}>
+            <div className={settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}>
+              {activeTab === 'personal' ? 'Type' : 'Locations'}
+            </div>
+            <div className={`font-medium ${settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}`}>
+              {activeTab === 'personal' ? obj.material : obj.locations.toLocaleString()}
+            </div>
+          </div>
+          <div className={`p-2 rounded ${
+            settings.darkMode ? 'bg-neutral-700' : 'bg-gray-50'
+          }`}>
+            <div className={settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}>Material</div>
+            <div className={`font-medium ${settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}`}>
+              {obj.material.split('/')[0]}
+            </div>
+          </div>
+        </div>
+        
+        <div className={`text-xs ${settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}`}>
+          {obj.description && <div className="mb-1">{obj.description}</div>}
+          Size: {obj.dimensions}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${
+      settings.darkMode ? 'bg-neutral-900' : 'bg-gray-50'
+    }`}>
+      <style>{`
+        @keyframes rotateXY {
+          0% { transform: rotateX(0deg) rotateY(0deg); }
+          25% { transform: rotateX(15deg) rotateY(90deg); }
+          50% { transform: rotateX(0deg) rotateY(180deg); }
+          75% { transform: rotateX(-15deg) rotateY(270deg); }
+          100% { transform: rotateX(0deg) rotateY(360deg); }
+        }
+      `}</style>
+
+      <header className={`border-b px-4 py-3 transition-colors duration-300 ${
+        settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+      }`}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <Database className="w-6 h-6 text-emerald-500" />
+              <h1 className={`text-lg font-semibold ${
+                settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+              }`}>
+                3DCommons
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className={`text-sm ${
+                settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+              }`}>
+                {activeTab === 'personal' ? `${personalObjects.length} personal objects` : '45,783 public objects'}
+              </div>
+              <button
+                onClick={() => setShowUpload(true)}
+                className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                  settings.darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'text-gray-600'
+                }`}
+                title="Upload Object"
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setShowSettings(true)}
+                className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                  settings.darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'text-gray-600'
+                }`}
+                title="Settings"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className={`flex space-x-1 p-1 rounded ${
+            settings.darkMode ? 'bg-neutral-700' : 'bg-gray-100'
+          }`}>
+            <button
+              onClick={() => setActiveTab('personal')}
+              className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+                activeTab === 'personal'
+                  ? settings.darkMode ? 'bg-neutral-600 text-neutral-100 shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                  : settings.darkMode ? 'text-neutral-300 hover:text-neutral-100' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              My Objects
+            </button>
+            <button
+              onClick={() => setActiveTab('public')}
+              className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+                activeTab === 'public'
+                  ? settings.darkMode ? 'bg-neutral-600 text-neutral-100 shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                  : settings.darkMode ? 'text-neutral-300 hover:text-neutral-100' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Public Database
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="col-span-1">
+            <div className={`border rounded p-4 ${
+              settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+            }`}>
+              {activeTab === 'personal' ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className={`text-sm font-semibold ${
+                      settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                    }`}>
+                      {selectedFolder ? 'Categories' : 'My Folders'}
+                    </h2>
+                    {selectedFolder && (
+                      <button
+                        onClick={() => setSelectedFolder('')}
+                        className={`text-xs px-2 py-1 rounded transition-colors ${
+                          settings.darkMode
+                            ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Back
+                      </button>
+                    )}
+                  </div>
+                  
+                  {!selectedFolder ? (
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => setSelectedCategory('')}
+                        className={`w-full text-left px-2 py-1 text-xs rounded transition-colors flex items-center space-x-2 ${
+                          selectedCategory === ''
+                            ? 'bg-emerald-500 text-white'
+                            : settings.darkMode
+                              ? 'text-neutral-300 hover:bg-neutral-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <FolderOpen className="w-3 h-3" />
+                        <span>All Objects</span>
+                      </button>
+                      {folders.map(folder => (
+                        <button
+                          key={folder.id}
+                          onClick={() => setSelectedFolder(folder.id)}
+                          className={`w-full text-left px-2 py-1 text-xs rounded transition-colors flex items-center justify-between ${
+                            settings.darkMode
+                              ? 'text-neutral-300 hover:bg-neutral-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Folder className="w-3 h-3" />
+                            <span>{folder.name}</span>
+                          </div>
+                          <span className={`text-xs ${
+                            settings.darkMode ? 'text-neutral-500' : 'text-gray-400'
+                          }`}>
+                            {folder.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {categories.map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat === 'All' ? '' : cat)}
+                          className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
+                            (selectedCategory === cat || (selectedCategory === '' && cat === 'All'))
+                              ? 'bg-green-600 text-white'
+                              : settings.darkMode
+                                ? 'text-gray-300 hover:bg-gray-700'
+                                : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <h2 className={`text-sm font-semibold mb-3 ${
+                    settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                  }`}>
+                    Categories
+                  </h2>
+                  <div className="space-y-1">
+                    {categories.map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat === 'All' ? '' : cat)}
+                        className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
+                          (selectedCategory === cat || (selectedCategory === '' && cat === 'All'))
+                            ? 'bg-emerald-500 text-white'
+                            : settings.darkMode
+                              ? 'text-neutral-300 hover:bg-neutral-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="col-span-3 space-y-4">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400`} />
+              <input
+                type="text"
+                placeholder="Search objects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-10 pr-3 py-2 border rounded focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 transition-colors ${
+                  settings.darkMode 
+                    ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-500' 
+                    : 'border-gray-200 placeholder-gray-400'
+                }`}
+              />
+            </div>
+
+            <div className={`text-xs mb-3 ${
+              settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+            }`}>
+              {filteredObjects.length} {activeTab === 'personal' ? 'personal' : 'public'} objects found
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {filteredObjects.map(obj => (
+                <ObjectCard key={obj.id} obj={obj} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`rounded-lg max-w-md w-full border ${
+            settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className={`text-lg font-semibold ${
+                  settings.darkMode ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  Settings
+                </h2>
+                <button 
+                  onClick={() => setShowSettings(false)}
+                  className={`p-1 rounded hover:bg-gray-100 transition-colors ${
+                    settings.darkMode ? 'hover:bg-gray-700 text-gray-400' : 'text-gray-500'
+                  }`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className={`text-sm font-medium ${
+                      settings.darkMode ? 'text-gray-200' : 'text-gray-700'
+                    }`}>
+                      Dark Mode
+                    </h3>
+                    <p className={`text-xs ${
+                      settings.darkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
+                      Toggle dark theme
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => updateSetting('darkMode', !settings.darkMode)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      settings.darkMode ? 'bg-emerald-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      settings.darkMode ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className={`text-sm font-medium ${
+                      settings.darkMode ? 'text-gray-200' : 'text-gray-700'
+                    }`}>
+                      Object Rotation
+                    </h3>
+                    <p className={`text-xs ${
+                      settings.darkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
+                      Enable 3D object animations
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => updateSetting('enableRotation', !settings.enableRotation)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      settings.enableRotation ? 'bg-green-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      settings.enableRotation ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+
+                {settings.enableRotation && (
+                  <div>
+                    <h3 className={`text-sm font-medium mb-3 ${
+                      settings.darkMode ? 'text-gray-200' : 'text-gray-700'
+                    }`}>
+                      Rotation Speed
+                    </h3>
+                    <div className="flex space-x-2">
+                      {['slow', 'normal', 'fast'].map(speed => (
+                        <button
+                          key={speed}
+                          onClick={() => updateSetting('rotationSpeed', speed)}
+                          className={`px-3 py-2 text-xs rounded transition-colors ${
+                            settings.rotationSpeed === speed
+                              ? 'bg-green-600 text-white'
+                              : settings.darkMode
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {speed.charAt(0).toUpperCase() + speed.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className={`mt-6 pt-4 border-t ${
+                settings.darkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ThreeDCommons;
