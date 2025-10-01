@@ -1,0 +1,1346 @@
+import React, { useState } from 'react';
+import { Search, Database, Settings, X, Upload, Plus, Folder, FolderOpen, Tag } from 'lucide-react';
+
+const ThreeDCommons = () => {
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('personal');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadStep, setUploadStep] = useState(1);
+  const [selectedFolder, setSelectedFolder] = useState('');
+  const [selectedObject, setSelectedObject] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    lighting: '',
+    material: '',
+    minQuality: 0,
+    maxFileSize: 500,
+    hasNormalMaps: false,
+    hasTextureAtlas: false
+  });
+  const [settings, setSettings] = useState({
+    darkMode: false,
+    enableRotation: true,
+    rotationSpeed: 'normal'
+  });
+  const [uploadForm, setUploadForm] = useState({
+    name: '',
+    description: '',
+    tags: [],
+    currentTag: '',
+    category: '',
+    folder: '',
+    isPublic: false,
+    file: null,
+    dimensions: {
+      length: '',
+      width: '',
+      height: '',
+      unit: 'cm'
+    },
+    captureInfo: {
+      lightingCondition: '',
+      cameraUsed: '',
+      captureDate: '',
+      photoCount: '',
+      processingMethod: ''
+    },
+    technicalDetails: {
+      splatCount: '',
+      fileFormat: '.ply',
+      hasNormalMaps: false,
+      hasTextureAtlas: false,
+      lodVersions: []
+    },
+    metadata: {
+      materialType: '',
+      condition: '',
+      era: '',
+      location: ''
+    },
+    licensing: {
+      licenseType: 'personal',
+      commercialUse: false,
+      attribution: true
+    }
+  });
+
+  const getRotationSpeed = () => {
+    if (!settings.enableRotation) return '0s';
+    switch (settings.rotationSpeed) {
+      case 'slow': return '12s';
+      case 'fast': return '3s';
+      default: return '6s';
+    }
+  };
+
+  const updateSetting = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const folders = [
+    { id: 'childhood', name: 'Childhood Memories', count: 2 },
+    { id: 'vehicles', name: 'My Vehicles', count: 1 },
+    { id: 'current-home', name: 'Current Home', count: 1 },
+    { id: 'family-items', name: 'Family Heirlooms', count: 1 }
+  ];
+
+  const addTag = () => {
+    if (uploadForm.currentTag.trim() && !uploadForm.tags.includes(uploadForm.currentTag.trim())) {
+      setUploadForm(prev => ({
+        ...prev,
+        tags: [...prev.tags, prev.currentTag.trim()],
+        currentTag: ''
+      }));
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setUploadForm(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setUploadForm(prev => ({ ...prev, file }));
+    }
+  };
+
+  const resetUploadForm = () => {
+    setUploadForm({
+      name: '',
+      description: '',
+      tags: [],
+      currentTag: '',
+      category: '',
+      folder: '',
+      isPublic: false,
+      file: null,
+      dimensions: {
+        length: '',
+        width: '',
+        height: '',
+        unit: 'cm'
+      },
+      captureInfo: {
+        lightingCondition: '',
+        cameraUsed: '',
+        captureDate: '',
+        photoCount: '',
+        processingMethod: ''
+      },
+      technicalDetails: {
+        splatCount: '',
+        fileFormat: '.ply',
+        hasNormalMaps: false,
+        hasTextureAtlas: false,
+        lodVersions: []
+      },
+      metadata: {
+        materialType: '',
+        condition: '',
+        era: '',
+        location: ''
+      },
+      licensing: {
+        licenseType: 'personal',
+        commercialUse: false,
+        attribution: true
+      }
+    });
+  };
+
+  const handleUploadSubmit = () => {
+    console.log('Uploading:', uploadForm);
+    alert(`Object "${uploadForm.name}" ${uploadForm.isPublic ? 'published publicly' : 'saved privately'}!`);
+    resetUploadForm();
+    setShowUpload(false);
+    setUploadStep(1);
+  };
+
+  const personalObjects = [
+    {
+      id: 'PERS-001',
+      name: 'My Childhood Bedroom',
+      category: 'Spaces',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '3.2×4.1×2.8m',
+      captureType: 'Gaussian Splat',
+      fileSize: '127 MB',
+      date: 'Summer 1995',
+      description: 'Complete photogrammetry scan of my bedroom from when I was 8 years old',
+      lighting: 'natural-daylight',
+      material: 'Mixed',
+      quality: 95,
+      downloads: 0,
+      views: 12,
+      rating: 5.0,
+      reviews: 0,
+      hasNormalMaps: true,
+      hasTextureAtlas: false,
+      captureInfo: {
+        photoCount: 247,
+        processingMethod: 'Luma AI',
+        cameraUsed: 'iPhone 15 Pro'
+      }
+    },
+    {
+      id: 'PERS-002',
+      name: '1994 Honda Civic',
+      category: 'Vehicles',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '4.4×1.7×1.4m',
+      captureType: 'Gaussian Splat',
+      fileSize: '203 MB',
+      date: 'March 2001',
+      description: 'My first car, photogrammetry scan before I sold it',
+      lighting: 'overcast',
+      material: 'Metal/Plastic',
+      quality: 92,
+      downloads: 0,
+      views: 8,
+      rating: 4.8,
+      reviews: 0,
+      hasNormalMaps: true,
+      hasTextureAtlas: true,
+      captureInfo: {
+        photoCount: 312,
+        processingMethod: 'RealityCapture',
+        cameraUsed: 'DSLR Canon 5D'
+      }
+    },
+    {
+      id: 'PERS-003',
+      name: 'Austin Apartment Living Room',
+      category: 'Spaces',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '4.8×3.2×2.4m',
+      captureType: 'Gaussian Splat',
+      fileSize: '156 MB',
+      date: 'October 2023',
+      description: 'Current living space documentation',
+      lighting: 'indoor-mixed',
+      material: 'Mixed',
+      quality: 88,
+      downloads: 0,
+      views: 15,
+      rating: 4.5,
+      reviews: 0,
+      hasNormalMaps: false,
+      hasTextureAtlas: false,
+      captureInfo: {
+        photoCount: 189,
+        processingMethod: 'Polycam',
+        cameraUsed: 'iPhone 14 Pro'
+      }
+    },
+    {
+      id: 'PERS-004',
+      name: 'Grandmother\'s Rocking Chair',
+      category: 'Furniture',
+      confidence: 100,
+      locations: 1,
+      verified: true,
+      dimensions: '65×85×110cm',
+      captureType: 'Gaussian Splat',
+      fileSize: '89 MB',
+      date: 'December 2022',
+      description: 'Family heirloom, photogrammetry scan',
+      lighting: 'studio-lit',
+      material: 'Wood/Fabric',
+      quality: 97,
+      downloads: 0,
+      views: 23,
+      rating: 5.0,
+      reviews: 0,
+      hasNormalMaps: true,
+      hasTextureAtlas: true,
+      captureInfo: {
+        photoCount: 156,
+        processingMethod: 'Luma AI',
+        cameraUsed: 'iPhone 15 Pro'
+      }
+    }
+  ];
+
+  const publicObjects = [
+    {
+      id: 'OBJ-001',
+      name: 'Roland TR-808 Drum Machine',
+      category: 'Electronics',
+      confidence: 98,
+      locations: 847,
+      verified: true,
+      dimensions: '32.8×21.1×8.4cm',
+      captureType: 'Gaussian Splat',
+      fileSize: '45 MB',
+      description: 'Classic analog drum machine',
+      lighting: 'studio-lit',
+      material: 'Plastic/Metal',
+      quality: 96,
+      downloads: 1247,
+      views: 8934,
+      rating: 4.9,
+      reviews: 142,
+      hasNormalMaps: true,
+      hasTextureAtlas: true,
+      captureInfo: {
+        photoCount: 178,
+        processingMethod: 'RealityCapture',
+        cameraUsed: 'DSLR Sony A7'
+      }
+    },
+    {
+      id: 'OBJ-002',
+      name: 'Claw Hammer 16oz',
+      category: 'Tools',
+      confidence: 99,
+      locations: 2847,
+      verified: true,
+      dimensions: '32×3.2×13cm',
+      captureType: 'Gaussian Splat',
+      fileSize: '23 MB',
+      description: 'Standard construction hammer',
+      lighting: 'natural-daylight',
+      material: 'Steel/Wood',
+      quality: 94,
+      downloads: 3421,
+      views: 15678,
+      rating: 4.8,
+      reviews: 287,
+      hasNormalMaps: true,
+      hasTextureAtlas: false,
+      captureInfo: {
+        photoCount: 89,
+        processingMethod: 'Polycam',
+        cameraUsed: 'iPhone 14 Pro'
+      }
+    },
+    {
+      id: 'OBJ-003',
+      name: 'Arduino Uno R3',
+      category: 'Electronics',
+      confidence: 96,
+      locations: 1234,
+      verified: true,
+      dimensions: '68.6×53.4mm',
+      captureType: 'Gaussian Splat',
+      fileSize: '18 MB',
+      description: 'Microcontroller development board',
+      lighting: 'studio-lit',
+      material: 'PCB/Components',
+      quality: 91,
+      downloads: 892,
+      views: 4521,
+      rating: 4.7,
+      reviews: 78,
+      hasNormalMaps: false,
+      hasTextureAtlas: true,
+      captureInfo: {
+        photoCount: 124,
+        processingMethod: 'Luma AI',
+        cameraUsed: 'iPhone 15 Pro'
+      }
+    },
+    {
+      id: 'OBJ-004',
+      name: 'Phillips Head Screwdriver',
+      category: 'Tools',
+      confidence: 97,
+      locations: 3421,
+      verified: true,
+      dimensions: '18×2.5cm',
+      captureType: 'Gaussian Splat',
+      fileSize: '21 MB',
+      description: 'Standard Phillips head screwdriver',
+      lighting: 'natural-daylight',
+      material: 'Steel/Plastic',
+      quality: 93,
+      downloads: 2156,
+      views: 9834,
+      rating: 4.6,
+      reviews: 198,
+      hasNormalMaps: true,
+      hasTextureAtlas: false,
+      captureInfo: {
+        photoCount: 95,
+        processingMethod: 'Polycam',
+        cameraUsed: 'iPhone 13 Pro'
+      }
+    }
+  ];
+
+  const categories = activeTab === 'personal' 
+    ? (selectedFolder ? [] : ['All', 'Spaces', 'Vehicles', 'Furniture', 'Personal Items'])
+    : ['All', 'Electronics', 'Tools', 'Materials', 'Agriculture'];
+
+  const currentObjects = activeTab === 'personal' ? personalObjects : publicObjects;
+
+  const filteredObjects = currentObjects.filter(obj => {
+    const matchesSearch = obj.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === '' || selectedCategory === 'All' || obj.category === selectedCategory;
+    const matchesLighting = !filters.lighting || obj.lighting === filters.lighting;
+    const matchesMaterial = !filters.material || obj.material.toLowerCase().includes(filters.material.toLowerCase());
+    const matchesQuality = obj.quality >= filters.minQuality;
+    const matchesNormalMaps = !filters.hasNormalMaps || obj.hasNormalMaps;
+    const matchesTextureAtlas = !filters.hasTextureAtlas || obj.hasTextureAtlas;
+    
+    return matchesSearch && matchesCategory && matchesLighting && matchesMaterial && matchesQuality && matchesNormalMaps && matchesTextureAtlas;
+  });
+
+  const ObjectCard = ({ obj }) => (
+    <div 
+      onClick={() => setSelectedObject(obj)}
+      className={`border rounded p-3 hover:border-gray-300 transition-colors cursor-pointer ${
+        settings.darkMode ? 'bg-neutral-800 border-neutral-700 hover:border-neutral-600' : 'bg-white border-gray-200'
+      }`}
+    >
+      <div className={`w-full aspect-square border rounded mb-3 flex items-center justify-center relative ${
+        settings.darkMode ? 'bg-neutral-700 border-neutral-600' : 'bg-gray-50 border-gray-200'
+      }`}>
+        <div className="w-10 h-10 relative">
+          <div 
+            className="absolute inset-0"
+            style={{
+              transformStyle: 'preserve-3d',
+              animation: settings.enableRotation ? `rotateXY ${getRotationSpeed()} linear infinite` : 'none'
+            }}
+          >
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-500 border-neutral-400' : 'bg-gray-300 border-gray-400'
+              }`}
+              style={{ transform: 'translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-400 border-gray-500'
+              }`}
+              style={{ transform: 'translateZ(-20px) rotateY(180deg)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-400 border-neutral-300' : 'bg-gray-200 border-gray-300'
+              }`}
+              style={{ transform: 'rotateY(90deg) translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-500 border-neutral-400' : 'bg-gray-300 border-gray-400'
+              }`}
+              style={{ transform: 'rotateY(-90deg) translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-300 border-neutral-200' : 'bg-gray-100 border-gray-200'
+              }`}
+              style={{ transform: 'rotateX(90deg) translateZ(20px)' }}
+            />
+            <div 
+              className={`absolute inset-0 border rounded ${
+                settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-400 border-gray-500'
+              }`}
+              style={{ transform: 'rotateX(-90deg) translateZ(20px)' }}
+            />
+          </div>
+        </div>
+        
+        {obj.verified && (
+          <div className="absolute top-2 right-2 w-2 h-2 bg-emerald-400 rounded-full" title="Verified Scan" />
+        )}
+        
+        <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium ${
+          obj.quality >= 95 ? 'bg-emerald-500 text-white' :
+          obj.quality >= 90 ? 'bg-blue-500 text-white' :
+          obj.quality >= 85 ? 'bg-yellow-500 text-white' :
+          'bg-orange-500 text-white'
+        }`}>
+          {obj.quality}%
+        </div>
+
+        <div className="absolute bottom-2 left-2 flex gap-1">
+          {obj.hasNormalMaps && (
+            <div className="bg-purple-500 text-white px-1.5 py-0.5 rounded text-xs" title="Normal Maps Available">
+              N
+            </div>
+          )}
+          {obj.hasTextureAtlas && (
+            <div className="bg-indigo-500 text-white px-1.5 py-0.5 rounded text-xs" title="Texture Atlas Available">
+              T
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <h3 className={`font-medium text-sm leading-tight ${
+          settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+        }`}>
+          {obj.name}
+        </h3>
+        
+        {activeTab === 'public' && (
+          <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center">
+              <span className="text-yellow-500">★</span>
+              <span className={`ml-1 ${settings.darkMode ? 'text-neutral-300' : 'text-gray-700'}`}>
+                {obj.rating}
+              </span>
+            </div>
+            <span className={settings.darkMode ? 'text-neutral-500' : 'text-gray-400'}>•</span>
+            <span className={settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}>
+              {obj.downloads.toLocaleString()} downloads
+            </span>
+          </div>
+        )}
+        
+        <div className={`flex justify-between text-xs ${
+          settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+        }`}>
+          <span>{obj.category}</span>
+          <span>{activeTab === 'personal' ? obj.date : `AI: ${obj.confidence}%`}</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className={`p-2 rounded ${
+            settings.darkMode ? 'bg-neutral-700' : 'bg-gray-50'
+          }`}>
+            <div className={settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}>
+              {activeTab === 'personal' ? 'Type' : 'Locations'}
+            </div>
+            <div className={`font-medium ${settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}`}>
+              {activeTab === 'personal' ? obj.captureType : obj.locations.toLocaleString()}
+            </div>
+          </div>
+          <div className={`p-2 rounded ${
+            settings.darkMode ? 'bg-neutral-700' : 'bg-gray-50'
+          }`}>
+            <div className={settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}>File Size</div>
+            <div className={`font-medium ${settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}`}>
+              {obj.fileSize}
+            </div>
+          </div>
+        </div>
+        
+        <div className={`text-xs ${settings.darkMode ? 'text-neutral-400' : 'text-gray-500'}`}>
+          <div className="mb-1">{obj.description}</div>
+          <div className="flex items-center justify-between">
+            <span>Size: {obj.dimensions}</span>
+            {obj.lighting && (
+              <span className="capitalize">{obj.lighting.replace('-', ' ')}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${
+      settings.darkMode ? 'bg-neutral-900' : 'bg-gray-50'
+    }`}>
+      <style>{`
+        @keyframes rotateXY {
+          0% { transform: rotateX(0deg) rotateY(0deg); }
+          25% { transform: rotateX(15deg) rotateY(90deg); }
+          50% { transform: rotateX(0deg) rotateY(180deg); }
+          75% { transform: rotateX(-15deg) rotateY(270deg); }
+          100% { transform: rotateX(0deg) rotateY(360deg); }
+        }
+      `}</style>
+
+      <header className={`border-b px-4 py-3 transition-colors duration-300 ${
+        settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+      }`}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <Database className="w-6 h-6 text-emerald-500" />
+              <h1 className={`text-lg font-semibold ${
+                settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+              }`}>
+                3DCommons
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className={`text-sm ${
+                settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+              }`}>
+                {activeTab === 'personal' ? `${personalObjects.length} personal objects` : '45,783 public objects'}
+              </div>
+              <button
+                onClick={() => setShowUpload(true)}
+                className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                  settings.darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'text-gray-600'
+                }`}
+                title="Upload Photogrammetry Scan"
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setShowSettings(true)}
+                className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                  settings.darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'text-gray-600'
+                }`}
+                title="Settings"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className={`flex space-x-1 p-1 rounded ${
+            settings.darkMode ? 'bg-neutral-700' : 'bg-gray-100'
+          }`}>
+            <button
+              onClick={() => setActiveTab('personal')}
+              className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+                activeTab === 'personal'
+                  ? settings.darkMode ? 'bg-neutral-600 text-neutral-100 shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                  : settings.darkMode ? 'text-neutral-300 hover:text-neutral-100' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              My Objects
+            </button>
+            <button
+              onClick={() => setActiveTab('public')}
+              className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+                activeTab === 'public'
+                  ? settings.darkMode ? 'bg-neutral-600 text-neutral-100 shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                  : settings.darkMode ? 'text-neutral-300 hover:text-neutral-100' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Public Database
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="col-span-1">
+            <div className={`border rounded p-4 ${
+              settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+            }`}>
+              {activeTab === 'personal' ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className={`text-sm font-semibold ${
+                      settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                    }`}>
+                      {selectedFolder ? 'Categories' : 'My Folders'}
+                    </h2>
+                    {selectedFolder && (
+                      <button
+                        onClick={() => setSelectedFolder('')}
+                        className={`text-xs px-2 py-1 rounded transition-colors ${
+                          settings.darkMode
+                            ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Back
+                      </button>
+                    )}
+                  </div>
+                  
+                  {!selectedFolder ? (
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => setSelectedCategory('')}
+                        className={`w-full text-left px-2 py-1 text-xs rounded transition-colors flex items-center space-x-2 ${
+                          selectedCategory === ''
+                            ? 'bg-emerald-500 text-white'
+                            : settings.darkMode
+                              ? 'text-neutral-300 hover:bg-neutral-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <FolderOpen className="w-3 h-3" />
+                        <span>All Objects</span>
+                      </button>
+                      {folders.map(folder => (
+                        <button
+                          key={folder.id}
+                          onClick={() => setSelectedFolder(folder.id)}
+                          className={`w-full text-left px-2 py-1 text-xs rounded transition-colors flex items-center justify-between ${
+                            settings.darkMode
+                              ? 'text-neutral-300 hover:bg-neutral-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Folder className="w-3 h-3" />
+                            <span>{folder.name}</span>
+                          </div>
+                          <span className={`text-xs ${
+                            settings.darkMode ? 'text-neutral-500' : 'text-gray-400'
+                          }`}>
+                            {folder.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {categories.map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat === 'All' ? '' : cat)}
+                          className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
+                            (selectedCategory === cat || (selectedCategory === '' && cat === 'All'))
+                              ? 'bg-emerald-500 text-white'
+                              : settings.darkMode
+                                ? 'text-neutral-300 hover:bg-neutral-700'
+                                : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <h2 className={`text-sm font-semibold mb-3 ${
+                    settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                  }`}>
+                    Categories
+                  </h2>
+                  <div className="space-y-1">
+                    {categories.map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat === 'All' ? '' : cat)}
+                        className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
+                          (selectedCategory === cat || (selectedCategory === '' && cat === 'All'))
+                            ? 'bg-emerald-500 text-white'
+                            : settings.darkMode
+                              ? 'text-neutral-300 hover:bg-neutral-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="col-span-3 space-y-4">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400`} />
+                <input
+                  type="text"
+                  placeholder="Search objects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full pl-10 pr-3 py-2 border rounded focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 transition-colors ${
+                    settings.darkMode 
+                      ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-500' 
+                      : 'border-gray-200 placeholder-gray-400'
+                  }`}
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-2 border rounded transition-colors flex items-center gap-2 text-sm ${
+                  showFilters
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : settings.darkMode
+                      ? 'border-neutral-700 hover:border-neutral-600'
+                      : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                Filters
+              </button>
+            </div>
+
+            {showFilters && (
+              <div className={`border rounded p-4 ${
+                settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+              }`}>
+                <h3 className={`text-sm font-semibold mb-3 ${
+                  settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                }`}>
+                  Advanced Filters
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className={`block text-xs mb-2 ${
+                      settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                    }`}>
+                      Lighting
+                    </label>
+                    <select
+                      value={filters.lighting}
+                      onChange={(e) => setFilters(prev => ({ ...prev, lighting: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded text-sm ${
+                        settings.darkMode 
+                          ? 'bg-neutral-700 border-neutral-600 text-neutral-100' 
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Any</option>
+                      <option value="natural-daylight">Natural Daylight</option>
+                      <option value="golden-hour">Golden Hour</option>
+                      <option value="overcast">Overcast</option>
+                      <option value="studio-lit">Studio Lit</option>
+                      <option value="indoor-mixed">Indoor Mixed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={`block text-xs mb-2 ${
+                      settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                    }`}>
+                      Material
+                    </label>
+                    <input
+                      type="text"
+                      value={filters.material}
+                      onChange={(e) => setFilters(prev => ({ ...prev, material: e.target.value }))}
+                      placeholder="wood, metal, etc."
+                      className={`w-full px-3 py-2 border rounded text-sm ${
+                        settings.darkMode 
+                          ? 'bg-neutral-700 border-neutral-600 text-neutral-100 placeholder-neutral-500' 
+                          : 'border-gray-300 placeholder-gray-400'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs mb-2 ${
+                      settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                    }`}>
+                      Min Quality: {filters.minQuality}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={filters.minQuality}
+                      onChange={(e) => setFilters(prev => ({ ...prev, minQuality: parseInt(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-4 mt-3">
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={filters.hasNormalMaps}
+                      onChange={(e) => setFilters(prev => ({ ...prev, hasNormalMaps: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    <span className={settings.darkMode ? 'text-neutral-300' : 'text-gray-700'}>
+                      Has Normal Maps
+                    </span>
+                  </label>
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={filters.hasTextureAtlas}
+                      onChange={(e) => setFilters(prev => ({ ...prev, hasTextureAtlas: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    <span className={settings.darkMode ? 'text-neutral-300' : 'text-gray-700'}>
+                      Has Texture Atlas
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <div className={`text-xs mb-3 ${
+              settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+            }`}>
+              {filteredObjects.length} {activeTab === 'personal' ? 'personal' : 'public'} objects found
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {filteredObjects.map(obj => (
+                <ObjectCard key={obj.id} obj={obj} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {selectedObject && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`rounded-lg max-w-5xl w-full border max-h-[90vh] overflow-y-auto ${
+            settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className={`text-2xl font-semibold ${
+                    settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                  }`}>
+                    {selectedObject.name}
+                  </h2>
+                  <p className={`text-sm mt-1 ${
+                    settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+                  }`}>
+                    {selectedObject.category} • {selectedObject.dimensions}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setSelectedObject(null)}
+                  className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                    settings.darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'text-gray-500'
+                  }`}
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-6">
+                {/* 3D Viewer */}
+                <div className="col-span-2">
+                  <div className={`border rounded-lg p-8 aspect-video flex items-center justify-center relative ${
+                    settings.darkMode ? 'bg-neutral-900 border-neutral-700' : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <div className="w-32 h-32 relative">
+                      <div 
+                        className="absolute inset-0"
+                        style={{
+                          transformStyle: 'preserve-3d',
+                          animation: settings.enableRotation ? `rotateXY ${getRotationSpeed()} linear infinite` : 'none'
+                        }}
+                      >
+                        <div 
+                          className={`absolute inset-0 border-2 rounded ${
+                            settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-300 border-gray-400'
+                          }`}
+                          style={{ transform: 'translateZ(64px)' }}
+                        />
+                        <div 
+                          className={`absolute inset-0 border-2 rounded ${
+                            settings.darkMode ? 'bg-neutral-700 border-neutral-600' : 'bg-gray-400 border-gray-500'
+                          }`}
+                          style={{ transform: 'translateZ(-64px) rotateY(180deg)' }}
+                        />
+                        <div 
+                          className={`absolute inset-0 border-2 rounded ${
+                            settings.darkMode ? 'bg-neutral-500 border-neutral-400' : 'bg-gray-200 border-gray-300'
+                          }`}
+                          style={{ transform: 'rotateY(90deg) translateZ(64px)' }}
+                        />
+                        <div 
+                          className={`absolute inset-0 border-2 rounded ${
+                            settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-300 border-gray-400'
+                          }`}
+                          style={{ transform: 'rotateY(-90deg) translateZ(64px)' }}
+                        />
+                        <div 
+                          className={`absolute inset-0 border-2 rounded ${
+                            settings.darkMode ? 'bg-neutral-400 border-neutral-300' : 'bg-gray-100 border-gray-200'
+                          }`}
+                          style={{ transform: 'rotateX(90deg) translateZ(64px)' }}
+                        />
+                        <div 
+                          className={`absolute inset-0 border-2 rounded ${
+                            settings.darkMode ? 'bg-neutral-700 border-neutral-600' : 'bg-gray-400 border-gray-500'
+                          }`}
+                          style={{ transform: 'rotateX(-90deg) translateZ(64px)' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* View Controls */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                      <button className={`px-3 py-1.5 rounded text-xs font-medium ${
+                        settings.darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}>
+                        Front
+                      </button>
+                      <button className={`px-3 py-1.5 rounded text-xs font-medium ${
+                        settings.darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}>
+                        Side
+                      </button>
+                      <button className={`px-3 py-1.5 rounded text-xs font-medium ${
+                        settings.darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}>
+                        Top
+                      </button>
+                      <button className={`px-3 py-1.5 rounded text-xs font-medium ${
+                        settings.darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}>
+                        Free
+                      </button>
+                    </div>
+
+                    {/* Quality Badge */}
+                    <div className={`absolute top-4 left-4 px-3 py-1.5 rounded font-medium ${
+                      selectedObject.quality >= 95 ? 'bg-emerald-500 text-white' :
+                      selectedObject.quality >= 90 ? 'bg-blue-500 text-white' :
+                      selectedObject.quality >= 85 ? 'bg-yellow-500 text-white' :
+                      'bg-orange-500 text-white'
+                    }`}>
+                      Quality: {selectedObject.quality}%
+                    </div>
+
+                    <div className={`absolute top-4 right-4 text-xs ${
+                      settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+                    }`}>
+                      Click and drag to rotate • Scroll to zoom
+                    </div>
+                  </div>
+
+                  {/* Thumbnail Views */}
+                  <div className="grid grid-cols-6 gap-2 mt-4">
+                    {['Front', 'Back', 'Left', 'Right', 'Top', 'Bottom'].map(view => (
+                      <button
+                        key={view}
+                        className={`aspect-square border rounded p-2 flex flex-col items-center justify-center text-xs transition-colors ${
+                          settings.darkMode 
+                            ? 'bg-neutral-700 border-neutral-600 hover:border-neutral-500' 
+                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 border rounded mb-1 ${
+                          settings.darkMode ? 'bg-neutral-600 border-neutral-500' : 'bg-gray-300 border-gray-400'
+                        }`} />
+                        <span className={settings.darkMode ? 'text-neutral-400' : 'text-gray-600'}>
+                          {view}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Details Panel */}
+                <div className="col-span-1 space-y-4">
+                  {/* Stats */}
+                  {activeTab === 'public' && (
+                    <div className={`border rounded-lg p-4 ${
+                      settings.darkMode ? 'border-neutral-700' : 'border-gray-200'
+                    }`}>
+                      <h3 className={`text-sm font-semibold mb-3 ${
+                        settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                      }`}>
+                        Community Stats
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className={settings.darkMode ? 'text-neutral-400' : 'text-gray-600'}>
+                            Rating
+                          </span>
+                          <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                            ★ {selectedObject.rating} ({selectedObject.reviews} reviews)
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className={settings.darkMode ? 'text-neutral-400' : 'text-gray-600'}>
+                            Downloads
+                          </span>
+                          <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                            {selectedObject.downloads.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className={settings.darkMode ? 'text-neutral-400' : 'text-gray-600'}>
+                            Views
+                          </span>
+                          <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                            {selectedObject.views.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Technical Details */}
+                  <div className={`border rounded-lg p-4 ${
+                    settings.darkMode ? 'border-neutral-700' : 'border-gray-200'
+                  }`}>
+                    <h3 className={`text-sm font-semibold mb-3 ${
+                      settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                    }`}>
+                      Technical Details
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className={`block text-xs ${
+                          settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                        }`}>
+                          Dimensions
+                        </span>
+                        <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                          {selectedObject.dimensions}
+                        </span>
+                      </div>
+                      <div>
+                        <span className={`block text-xs ${
+                          settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                        }`}>
+                          File Size
+                        </span>
+                        <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                          {selectedObject.fileSize}
+                        </span>
+                      </div>
+                      <div>
+                        <span className={`block text-xs ${
+                          settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                        }`}>
+                          Format
+                        </span>
+                        <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                          {selectedObject.captureType}
+                        </span>
+                      </div>
+                      <div>
+                        <span className={`block text-xs ${
+                          settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                        }`}>
+                          Material
+                        </span>
+                        <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                          {selectedObject.material}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Asset Badges */}
+                    <div className="flex gap-2 mt-3">
+                      {selectedObject.hasNormalMaps && (
+                        <span className="px-2 py-1 bg-purple-500 text-white rounded text-xs">
+                          Normal Maps
+                        </span>
+                      )}
+                      {selectedObject.hasTextureAtlas && (
+                        <span className="px-2 py-1 bg-indigo-500 text-white rounded text-xs">
+                          Texture Atlas
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Capture Info */}
+                  {selectedObject.captureInfo && (
+                    <div className={`border rounded-lg p-4 ${
+                      settings.darkMode ? 'border-neutral-700' : 'border-gray-200'
+                    }`}>
+                      <h3 className={`text-sm font-semibold mb-3 ${
+                        settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                      }`}>
+                        Capture Info
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className={`block text-xs ${
+                            settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                          }`}>
+                            Photos
+                          </span>
+                          <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                            {selectedObject.captureInfo.photoCount}
+                          </span>
+                        </div>
+                        <div>
+                          <span className={`block text-xs ${
+                            settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                          }`}>
+                            Camera
+                          </span>
+                          <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                            {selectedObject.captureInfo.cameraUsed}
+                          </span>
+                        </div>
+                        <div>
+                          <span className={`block text-xs ${
+                            settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                          }`}>
+                            Software
+                          </span>
+                          <span className={settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}>
+                            {selectedObject.captureInfo.processingMethod}
+                          </span>
+                        </div>
+                        <div>
+                          <span className={`block text-xs ${
+                            settings.darkMode ? 'text-neutral-400' : 'text-gray-600'
+                          }`}>
+                            Lighting
+                          </span>
+                          <span className={`capitalize ${settings.darkMode ? 'text-neutral-100' : 'text-gray-900'}`}>
+                            {selectedObject.lighting?.replace('-', ' ')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <div className={`border rounded-lg p-4 ${
+                    settings.darkMode ? 'border-neutral-700' : 'border-gray-200'
+                  }`}>
+                    <h3 className={`text-sm font-semibold mb-2 ${
+                      settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                    }`}>
+                      Description
+                    </h3>
+                    <p className={`text-sm ${
+                      settings.darkMode ? 'text-neutral-300' : 'text-gray-700'
+                    }`}>
+                      {selectedObject.description}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    <button className="w-full py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium">
+                      Download Scan
+                    </button>
+                    <button className={`w-full py-2.5 rounded-lg transition-colors font-medium ${
+                      settings.darkMode 
+                        ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}>
+                      Add to Collection
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`rounded-lg max-w-md w-full border ${
+            settings.darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className={`text-lg font-semibold ${
+                  settings.darkMode ? 'text-neutral-100' : 'text-gray-900'
+                }`}>
+                  Settings
+                </h2>
+                <button 
+                  onClick={() => setShowSettings(false)}
+                  className={`p-1 rounded hover:bg-gray-100 transition-colors ${
+                    settings.darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'text-gray-500'
+                  }`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className={`text-sm font-medium ${
+                      settings.darkMode ? 'text-neutral-200' : 'text-gray-700'
+                    }`}>
+                      Dark Mode
+                    </h3>
+                    <p className={`text-xs ${
+                      settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+                    }`}>
+                      Toggle dark theme
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => updateSetting('darkMode', !settings.darkMode)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      settings.darkMode ? 'bg-emerald-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      settings.darkMode ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className={`text-sm font-medium ${
+                      settings.darkMode ? 'text-neutral-200' : 'text-gray-700'
+                    }`}>
+                      Object Rotation
+                    </h3>
+                    <p className={`text-xs ${
+                      settings.darkMode ? 'text-neutral-400' : 'text-gray-500'
+                    }`}>
+                      Enable 3D object animations
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => updateSetting('enableRotation', !settings.enableRotation)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      settings.enableRotation ? 'bg-emerald-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      settings.enableRotation ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+
+                {settings.enableRotation && (
+                  <div>
+                    <h3 className={`text-sm font-medium mb-3 ${
+                      settings.darkMode ? 'text-neutral-200' : 'text-gray-700'
+                    }`}>
+                      Rotation Speed
+                    </h3>
+                    <div className="flex space-x-2">
+                      {['slow', 'normal', 'fast'].map(speed => (
+                        <button
+                          key={speed}
+                          onClick={() => updateSetting('rotationSpeed', speed)}
+                          className={`px-3 py-2 text-xs rounded transition-colors ${
+                            settings.rotationSpeed === speed
+                              ? 'bg-emerald-500 text-white'
+                              : settings.darkMode
+                                ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {speed.charAt(0).toUpperCase() + speed.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className={`mt-6 pt-4 border-t ${
+                settings.darkMode ? 'border-neutral-700' : 'border-gray-200'
+              }`}>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="w-full py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-colors text-sm"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ThreeDCommons;
